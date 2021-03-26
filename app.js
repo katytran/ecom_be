@@ -4,8 +4,10 @@ const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-const utilsHelper = require("./helpers/utils.helper");
+const passport = require("passport");
+require("./middlewares/passport");
 
+const utilsHelper = require("./helpers/utils.helper");
 const indexRouter = require("./routes/index");
 const mongoose = require("mongoose");
 const mongoURI = process.env.MONGODB_URI;
@@ -19,7 +21,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.use("/api", indexRouter);
-
+app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, "public")));
 
 /* DB Connections */
