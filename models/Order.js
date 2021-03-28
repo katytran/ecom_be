@@ -23,7 +23,7 @@ const orderSchema = Schema(
   },
   { timestamp: true }
 );
-//orderSchema.plugin(require("./plugins/isDeletedFalse"));
+orderSchema.plugin(require("./plugins/isDeletedFalse"));
 
 const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;

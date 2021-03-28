@@ -20,7 +20,7 @@ const productSchema = Schema(
     countInStock: { type: Number, required: true },
     description: { type: String, required: true },
     ingredients: { type: String, required: true },
-    reviews: [{ type: String, required: false }],
+    reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
     ratingAvg: { type: String, required: false },
     countInStock: { type: Number, required: false },
 

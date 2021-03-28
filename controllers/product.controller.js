@@ -6,19 +6,50 @@ const productControllers = {};
 productControllers.getAllProduct = async (req, res, next) => {
   try {
     // change to query later
-    let { page, limit, ...filters } = req.query;
-    console.log("aaaahuhu", req.query);
+    let { page, limit, query } = req.query;
+
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 30;
-    console.log("filters", { ...filters });
+    console.log("query is this: ", query);
+    // fenty foundation -> "fenty" "foundation"
+    if (query)
+      query = query
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .map((kw) => `"${kw}"`)
+        .join(" ");
+    console.log("kew", query);
+    let totalProducts;
+    let requestedProducts;
+    if (query === "") {
+      console.log("hi");
+      totalProducts = await Product.find({}).countDocuments();
+    } else {
+      totalProducts = await Product.find({
+        //   $or: [
+        //     { name: { $regex: query, $options: "i" } },
+        //     { brand: { $regex: query, $options: "i" } },
+        //   ],
+        // }).countDocuments();
+        $text: { $search: query },
+      }).countDocuments();
+    }
 
-    const totalProducts = await Product.find({ ...filters }).countDocuments();
     const totalPages = Math.ceil(totalProducts / limit);
     const offset = limit * (page - 1);
     console.log(offset);
-    const requestedProducts = await Product.find({ ...filters })
-      .skip(offset)
-      .limit(limit);
+
+    if (query === "") {
+      requestedProducts = await Product.find({}).skip(offset).limit(limit);
+    } else {
+      requestedProducts = await Product.find({
+        $text: { $search: query },
+      })
+        .skip(offset)
+        .limit(limit);
+    }
+
     // const requestedProducts = await Product.find({})
     utilsHelper.sendResponse(
       res,
@@ -33,6 +64,39 @@ productControllers.getAllProduct = async (req, res, next) => {
   }
 };
 
+/*productControllers.getAllProduct = async (req, res, next) => {
+  try {
+    // change to query later
+    let { page, limit, ...filters } = req.query;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 30;
+    console.log("filters is this: ", { ...filters });
+
+    const totalProducts = await Product.find({
+      name: { $regex: query, $options: "i" },
+    }).countDocuments();
+    const totalPages = Math.ceil(totalProducts / limit);
+    const offset = limit * (page - 1);
+    console.log(offset);
+    const requestedProducts = await Product.find({ ...filters })
+      .skip(offset)
+      .limit(limit);
+    console.log("requested product", requestedProducts);
+    // const requestedProducts = await Product.find({})
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { requestedProducts, totalPages },
+      null,
+      "Get all product Success"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+*/
 productControllers.getSingleProduct = async (req, res, next) => {
   try {
     const productId = req.params.id;
