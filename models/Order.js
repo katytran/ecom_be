@@ -11,17 +11,51 @@ const orderSchema = Schema(
           trim: true,
           lowercase: true,
         },
-        quantity: { type: String, required: true },
-        description: { type: String, required: true },
+        brand: {
+          type: String,
+          required: true,
+          trim: true,
+          uppercase: true,
+        },
         price: { type: Number, required: true },
-        images: [{ imageUrl: { type: String, required: false } }],
+        qty: { type: String, required: true },
+        description: { type: String, required: true },
+        image: { type: String, required: false },
       },
     ],
-    status: { type: String, emum: ["pending", "paid"], default: "pending" },
-    total: { type: Number, required: true },
+
+    shippingAddress: {
+      firstName: { type: String, required: true },
+      lastName: { type: String, required: true },
+      address1: { type: String, required: true },
+      address2: { type: String, required: true },
+      city: { type: String, required: true },
+      zip: { type: String, required: true },
+      country: { type: String, required: true },
+      lat: Number,
+      lng: Number,
+    },
+
+    paymentMethod: { type: String, required: true },
+
+    paymentResult: {
+      id: String,
+      status: String,
+      update_time: String,
+      email_address: String,
+    },
+
+    estimatedPrice: { type: Number, required: true },
+    shippingPrice: { type: Number, required: true },
+    taxPrice: { type: Number, required: true },
+    totalOrderPrice: { type: Number, required: true },
+    isPaid: { type: Boolean, default: false },
+    paidAt: { type: Date },
+    isDelivered: { type: Boolean, default: false },
+    deliveredAt: { type: Date },
     isDeleted: { type: Boolean, default: false },
   },
-  { timestamp: true }
+  { timestamps: true }
 );
 orderSchema.plugin(require("./plugins/isDeletedFalse"));
 

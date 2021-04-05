@@ -4,14 +4,35 @@ const authMiddleware = require("../middlewares/authentication");
 const orderControllers = require("../controllers/order.controller");
 
 /**
- * @route POST api/order/login
+ * @route GET api/orders
+ * @description User can see order history
+ * @access Login required
+ */
+router.get(
+  "/myorders",
+  authMiddleware.loginRequired,
+  orderControllers.getMyOrder
+);
+
+/**
+ * @route GET api/orders
+ * @description User can see order detail
+ * @access Login required
+ */
+router.get(
+  "/:id",
+  authMiddleware.loginRequired,
+  orderControllers.getDetailOrder
+);
+/**
+ * @route POST api/orders
  * @description User can create order
  * @access Login require
  */
-router.post("/", authMiddleware.loginRequired, orderControllers.createOrder);
+router.post("/add", authMiddleware.loginRequired, orderControllers.createOrder);
 
 /**
- * @route GET api/order/login
+ * @route GET api/orders
  * @description User can see order detail
  * @access Login required
  */
@@ -22,25 +43,36 @@ router.get(
 );
 
 /**
- * @route PUT api/order/login
- * @description User can update order
+ * @route PUT api/orders/:id
+ * @description Admin can update order
  * @access Login require
  */
 router.put(
   "/:id/update",
   authMiddleware.loginRequired,
+  authMiddleware.adminRequired,
   orderControllers.updateOrder
+);
+
+/**
+ * @route PUT api/orders/:id/pay
+ * @description Update payment order to true
+ * @access Login require
+ */
+router.put(
+  "/:id/pay",
+  authMiddleware.loginRequired,
+  orderControllers.updateOrderPayment
 );
 
 /**
  * @route DELETE api/order/login
  * @description Admin can delete order
- * @access Admin required
+ * @access
  */
 router.delete(
   "/:id",
   authMiddleware.loginRequired,
-  authMiddleware.adminRequired,
   orderControllers.deleteOrder
 );
 

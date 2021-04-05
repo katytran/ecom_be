@@ -24,6 +24,10 @@ app.use("/api", indexRouter);
 app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, "public")));
 
+//SEND PAYPAL _CLIENT TO FRONT END
+app.get("/api/config/paypal", (req, res) => {
+  res.send(process.env.PAYPAL_CLIENT || "CHECK PAYPAL CLIENT");
+});
 /* DB Connections */
 mongoose
   .connect(mongoURI, {

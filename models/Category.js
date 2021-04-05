@@ -11,7 +11,7 @@ const categorySchema = Schema(
     },
     isDeleted: { type: Boolean, default: false },
   },
-  { timestamp: true }
+  { timestamps: true }
 );
 categorySchema.plugin(require("./plugins/isDeletedFalse"));
 

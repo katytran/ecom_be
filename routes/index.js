@@ -15,7 +15,7 @@ router.use("/products", productApi);
 
 // orderApi
 const orderApi = require("./order.api");
-router.use("/order", orderApi);
+router.use("/orders", orderApi);
 
 // categoryApi
 const categoryApi = require("./category.api");
@@ -24,5 +24,9 @@ router.use("/category", categoryApi);
 // reviewApi
 const reviewApi = require("./review.api");
 router.use("/review", reviewApi);
+
+// cloudinaryApi
+const cloudinaryApi = require("./cloudinary.api");
+router.use("/cloudinary", cloudinaryApi);
 
 module.exports = router;

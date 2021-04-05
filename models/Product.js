@@ -17,20 +17,23 @@ const productSchema = Schema(
     },
 
     price: { type: Number, required: true },
-    countInStock: { type: Number, required: true },
     description: { type: String, required: true },
     ingredients: { type: String, required: true },
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
     ratingAvg: { type: String, required: false },
-    countInStock: { type: Number, required: false },
-
+    countInStock: { type: Number, required: true },
+    countSold: { type: Number },
     images: [{ type: String, required: false }],
     isDeleted: { type: Boolean, default: false },
-    categories: [{ type: Schema.Types.ObjectId, ref: "Category" }],
+    category: { type: Schema.Types.ObjectId, ref: "Category" },
   },
-  { timestamp: true }
+  { timestamps: true }
 );
+
+// productSchema.index({ title: "text", brand: "text" });
+
 productSchema.plugin(require("./plugins/isDeletedFalse"));
 
 const Product = mongoose.model("Product", productSchema);
+// Product.createIndexes();
 module.exports = Product;

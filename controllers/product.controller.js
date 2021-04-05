@@ -1,3 +1,4 @@
+const { image } = require("faker");
 const utilsHelper = require("../helpers/utils.helper");
 const Category = require("../models/Category");
 const Product = require("../models/Product");
@@ -6,11 +7,11 @@ const productControllers = {};
 productControllers.getAllProduct = async (req, res, next) => {
   try {
     // change to query later
-    let { page, limit, query } = req.query;
+    let { page, limit, query, sortBy, filter } = req.query;
 
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 30;
-    console.log("query is this: ", query);
+
     // fenty foundation -> "fenty" "foundation"
     if (query)
       query = query
@@ -19,11 +20,13 @@ productControllers.getAllProduct = async (req, res, next) => {
         .split(" ")
         .map((kw) => `"${kw}"`)
         .join(" ");
-    console.log("kew", query);
+
     let totalProducts;
     let requestedProducts;
-    if (query === "") {
-      console.log("hi");
+    console.log("query", query);
+    if (filter !== "") {
+      totalProducts = await Product.find({ category: filter }).countDocuments();
+    } else if (query === "" && filter == "") {
       totalProducts = await Product.find({}).countDocuments();
     } else {
       totalProducts = await Product.find({
@@ -39,9 +42,19 @@ productControllers.getAllProduct = async (req, res, next) => {
     const totalPages = Math.ceil(totalProducts / limit);
     const offset = limit * (page - 1);
     console.log(offset);
-
-    if (query === "") {
-      requestedProducts = await Product.find({}).skip(offset).limit(limit);
+    console.log("filter", filter);
+    if (filter !== "") {
+      requestedProducts = await Product.find({
+        category: filter,
+      })
+        .skip(offset)
+        .limit(limit)
+        .populate("category");
+    } else if (query === "" && filter === "") {
+      requestedProducts = await Product.find({})
+        .skip(offset)
+        .limit(limit)
+        .populate("category");
     } else {
       requestedProducts = await Product.find({
         $text: { $search: query },
@@ -100,7 +113,15 @@ productControllers.getAllProduct = async (req, res, next) => {
 productControllers.getSingleProduct = async (req, res, next) => {
   try {
     const productId = req.params.id;
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId)
+      .populate("category")
+      // .populate("reviews")
+      .populate({
+        path: "reviews",
+        populate: {
+          path: "user",
+        },
+      });
     utilsHelper.sendResponse(
       res,
       200,
@@ -114,6 +135,43 @@ productControllers.getSingleProduct = async (req, res, next) => {
   }
 };
 
+productControllers.add = async (req, res, next) => {
+  try {
+    const { brand, name, description, price, category, images } = req.body;
+    console.log("images", images);
+
+    let product = await Product.findOne({ name: name });
+    if (!product) {
+      let imagesArray = [];
+
+      for (let item of images) {
+        imagesArray.push(item);
+      }
+
+      product = await Product.create({
+        brand,
+        name,
+        description,
+        price,
+        // category,
+        images: imagesArray,
+      });
+      utilsHelper.sendResponse(
+        res,
+        200,
+        true,
+        { product },
+        null,
+        `Product ${name} Created Successfully`
+      );
+    } else {
+      return next(new Error("Product existed"));
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+/*
 productControllers.add = async (req, res, next) => {
   try {
     const { brand, name, description, price, categories, images } = req.body;
@@ -155,6 +213,7 @@ productControllers.add = async (req, res, next) => {
   }
 };
 
+*/
 productControllers.update = async (req, res, next) => {
   try {
     const { name, description, price, categories } = req.body;

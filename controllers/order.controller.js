@@ -6,31 +6,61 @@ const orderControllers = {};
 //Create the order
 orderControllers.createOrder = async (req, res, next) => {
   try {
-    const { userId, products, total } = req.body;
+    const {
+      userId,
+      products,
+      shippingAddress,
+      paymentMethod,
+      estimatedPrice,
+      shippingPrice,
+      taxPrice,
+      totalOrderPrice,
+    } = req.body;
+    console.log("estimated price", estimatedPrice);
+
     const productList = [];
-    let totalBe = 0;
+    let estimated_BE = 0;
 
     for (let item of products) {
-      if (item.quantity < 1) {
+      if (item.qty < 1) {
         return next(new Error("400 - Invalid Quantity"));
       }
 
-      let product = await Product.findById(item.id).lean();
+      let product = await Product.findById(item._id).lean();
+
       if (product) {
-        product.quantity = item.quantity;
-        totalBe += item.quantity * product.price;
+        // update product count in stock
+        product.image = product.images[0];
+        product.qty = item.qty;
+        estimated_BE += item.qty * product.price;
+        console.log("product found", product);
         productList.push(product);
       }
     }
+    console.log("total estimated", estimated_BE);
 
-    if (totalBe !== total)
+    const shippingPrice_BE = estimated_BE > 100 ? 0 : 10;
+    const taxPrice_BE = 0.09 * estimated_BE;
+    const total_BE = (estimated_BE + shippingPrice_BE + taxPrice_BE).toFixed(2);
+
+    console.log("shiping be", shippingPrice_BE);
+    console.log("total be", total_BE);
+    console.log("total Order", totalOrderPrice);
+    if (total_BE != totalOrderPrice)
       return next(new Error("400 - Total Price Does Not Match"));
+
     if (productList.length !== 0) {
       const order = await Order.create({
         userId,
         products: productList,
-        total,
+        shippingAddress,
+        paymentMethod,
+        estimatedPrice,
+        shippingPrice,
+        taxPrice,
+        totalOrderPrice,
       });
+
       utilsHelper.sendResponse(
         res,
         200,
@@ -51,7 +81,7 @@ orderControllers.createOrder = async (req, res, next) => {
 orderControllers.getDetailOrder = async (req, res, next) => {
   try {
     const orderId = req.params.id;
-    const order = await Order.find({ orderId });
+    const order = await Order.findById(orderId);
     if (!order) return next(new Error("401- Order not found"));
     utilsHelper.sendResponse(
       res,
@@ -66,12 +96,34 @@ orderControllers.getDetailOrder = async (req, res, next) => {
   }
 };
 
+//Get detail of an order by its ID
+orderControllers.getMyOrder = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const order = await Order.find({
+      userId,
+      isPaid: true,
+    });
+    if (!order) return next(new Error("401- Order not found"));
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { order },
+      null,
+      "get my orders success"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 orderControllers.updateOrder = async (req, res, next) => {
   try {
     const orderId = req.params.id;
     const { products } = req.body;
     const order = await Order.findByIdAndUpdate(
-      { orderId },
+      orderId,
       { products },
       { new: true }
     );
@@ -83,6 +135,35 @@ orderControllers.updateOrder = async (req, res, next) => {
       { order },
       null,
       "update order success"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+orderControllers.updateOrderPayment = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const paymentResult = req.body.paymentResult;
+    console.log("payment result", paymentResult);
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        isPaid: true,
+        paidAt: Date.now(),
+        paymentResult: paymentResult,
+      },
+      { new: true }
+    );
+    if (!order) return next(new Error("401- Order not found"));
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { order },
+      null,
+      "update order payment success"
     );
   } catch (error) {
     next(error);

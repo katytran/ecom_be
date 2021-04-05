@@ -18,6 +18,18 @@ router.post("/", userController.register);
 router.get("/me", authMiddleware.loginRequired, userController.getCurrentUser);
 
 /**
+ * @route GET api/user/all
+ * @description Return all info
+ * @access Login required
+ */
+router.get(
+  "/all",
+  authMiddleware.loginRequired,
+  authMiddleware.adminRequired,
+  userController.getAllUser
+);
+
+/**
  * @route GET api/users/:id/order
  * @description Return list orders of current user
  * @access Login Required or Admin authorized

@@ -8,28 +8,32 @@ const reviewControllers = require("../controllers/review.controller");
  * @description User can see list of reviews of a user
  * @access Public
  */
-router.get("/user/:id", reviewControllers.getReview);
+// router.get("/user/:id", reviewControllers.getReview);
 
 /**
  * @route GET api/review/product/:id
  * @description User can see list of reviews of a product
  * @access Public
  */
-router.get("/product/:id", reviewControllers.getReview);
+router.get("/:id", reviewControllers.getSingleReview);
 
 /**
  * @route POST api/review/add
  * @description Admin can add review
  * @access Admin Required
  */
-// router.post(
-//   "/add",
-//   authMiddleware.loginRequired,
-//   reviewControllers.createReview
-// );
-router.post("", (req, res) => {
-  console.log("jeje");
-});
+router.post(
+  "/add",
+  authMiddleware.loginRequired,
+  reviewControllers.createReview
+);
+
+/**
+ * @route POST api/review/get
+ * @description everyone
+ * @access everyone
+ */
+router.get("/", reviewControllers.getAllReview);
 
 /**
  * @route DELETE api/review/:id/delete

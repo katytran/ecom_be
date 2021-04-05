@@ -4,22 +4,12 @@ const categoryController = {};
 
 categoryController.getAllCategory = async (req, res, next) => {
   try {
-    let { page, limit, ...filters } = req.query;
-    page = parseInt(page) || 1;
-    limit = parseInt(limit) || 10;
-    console.log(page);
-
-    const totalCategory = await Category.find({ ...filters }).countDocuments();
-    const totalPages = Math.ceil(totalCategory / limit);
-    const offset = limit * (page - 1);
-    const requestedCategory = await Category.find({ ...filters })
-      .skip(offset)
-      .limit(limit);
+    const requestedCategories = await Category.find({});
     utilsHelper.sendResponse(
       res,
       200,
       true,
-      { requestedCategory, totalPages },
+      { requestedCategories },
       null,
       "Get all categories Success"
     );

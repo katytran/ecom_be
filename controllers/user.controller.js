@@ -43,6 +43,27 @@ userController.getCurrentUser = async (req, res, next) => {
   }
 };
 
+//get current user .
+userController.getAllUser = async (req, res, next) => {
+  try {
+    const users = await User.find({});
+    console.log("users", users);
+    if (!users) {
+      return next(Error("No users found"));
+    }
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { users },
+      null,
+      "Return user success"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 //Get order of current user
 userController.getCurrentUserOrder = async (req, res, next) => {
   try {
