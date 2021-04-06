@@ -26,10 +26,33 @@ orderControllers.createOrder = async (req, res, next) => {
         return next(new Error("400 - Invalid Quantity"));
       }
 
+      //let product = await Product.findById(item._id);
+
       let product = await Product.findById(item._id).lean();
 
       if (product) {
         // update product count in stock
+        let countInStock = product.countInStock;
+        let countSold = product.countSold;
+        console.log("CountInstock ", countInStock);
+        console.log("Countsold ", countSold);
+
+        if (countInStock > item.qty) {
+          countInStock = countInStock - item.qty;
+          countSold = Number(countSold) + Number(item.qty);
+          let updatedProduct = await Product.findByIdAndUpdate(
+            item._id,
+            {
+              countInStock,
+              countSold,
+            },
+            { new: true }
+          );
+          console.log("updated product", updatedProduct);
+        } else return next(new Error("400 - Not enough counts in stock"));
+
+        console.log("CountInstock update", countInStock);
+        console.log("Countsold update", countSold);
         product.image = product.images[0];
         product.qty = item.qty;
         estimated_BE += item.qty * product.price;

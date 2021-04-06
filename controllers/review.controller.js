@@ -60,7 +60,7 @@ reviewControllers.getSingleReview = async (req, res, next) => {
 
 reviewControllers.getAllReview = async (req, res, next) => {
   try {
-    let { productId, page, limit, query, sortBy, filter } = req.query;
+    let { productId, page, limit, query, sortBy } = req.query;
     console.log("in here");
     console.log("product Id", productId);
     page = parseInt(page) || 1;
@@ -76,13 +76,8 @@ reviewControllers.getAllReview = async (req, res, next) => {
 
     let totalReviews;
     let requestedReviews;
-    console.log("query", query);
-    if (filter !== "") {
-      totalReviews = await Review.find({
-        product: productId,
-        rating: filter,
-      }).countDocuments();
-    } else if (query === "" && filter == "") {
+
+    if (query === "") {
       totalReviews = await Review.find({ product: productId }).countDocuments();
     } else {
       totalReviews = await Review.find({
@@ -99,25 +94,26 @@ reviewControllers.getAllReview = async (req, res, next) => {
     const totalPages = Math.ceil(totalReviews / limit);
     const offset = limit * (page - 1);
     console.log(offset);
-    console.log("filter", filter);
-    if (filter !== "") {
-      requestedReviews = await Review.find({
-        product: productId,
-        rating: filter,
-      })
-        .sort({ rating: -1 })
-        .skip(offset)
-        .limit(limit);
-    } else if (query === "" && filter === "") {
+
+    let field = "createdAt";
+    let order = 1;
+    console.log("sort by", sortBy);
+
+    if (sortBy === "highest" || sortBy === "lowest") field = "rating";
+    if (sortBy === "highest" || sortBy === "newest") order = -1;
+    console.log("field", field);
+    console.log("order", order);
+
+    if (query === "") {
       requestedReviews = await Review.find({ product: productId })
-        .sort({ rating: -1 })
+        .sort({ [field]: order })
         .skip(offset)
         .limit(limit);
     } else {
       requestedReviews = await Review.find({
         $text: { $search: query },
       })
-        .sort({ rating: -1 })
+        .sort({ [field]: order })
         .skip(offset)
         .limit(limit);
     }
