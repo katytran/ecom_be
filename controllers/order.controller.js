@@ -139,7 +139,6 @@ orderControllers.getDetailOrder = async (req, res, next) => {
   }
 };
 
-//Get detail of an order by its ID
 orderControllers.getMyOrder = async (req, res, next) => {
   try {
     const userId = req.userId;
@@ -156,6 +155,7 @@ orderControllers.getMyOrder = async (req, res, next) => {
       null,
       "get my orders success"
     );
+    console.log("orders", order);
   } catch (error) {
     next(error);
   }
