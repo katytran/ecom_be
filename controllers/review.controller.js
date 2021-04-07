@@ -108,14 +108,17 @@ reviewControllers.getAllReview = async (req, res, next) => {
       requestedReviews = await Review.find({ product: productId })
         .sort({ [field]: order })
         .skip(offset)
-        .limit(limit);
+        .limit(limit)
+        .populate("user");
     } else {
       requestedReviews = await Review.find({
+        product: productId,
         $text: { $search: query },
       })
         .sort({ [field]: order })
         .skip(offset)
-        .limit(limit);
+        .limit(limit)
+        .populate("user");
     }
 
     // const requestedReviews = await Review.find({})

@@ -32,8 +32,8 @@ authMiddleware.adminRequired = async (req, res, next) => {
   try {
     const userId = req.userId;
     const currentUser = await User.findById(userId);
+    console.log("userId", userId);
     const isAdmin = currentUser.role === "admin";
-
     if (!isAdmin) return next(new Error("401- Admin required"));
     req.isAdmin = isAdmin;
 

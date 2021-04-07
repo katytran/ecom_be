@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const email = require("../helpers/email");
 
 // userApi
 const userApi = require("./user.api");
@@ -28,5 +29,11 @@ router.use("/review", reviewApi);
 // cloudinaryApi
 const cloudinaryApi = require("./cloudinary.api");
 router.use("/cloudinary", cloudinaryApi);
+
+/* Temporary GET route to send myself an email. */
+router.get("/test-email", (req, res) => {
+  email.sendTestEmail();
+  res.send("email sent");
+});
 
 module.exports = router;

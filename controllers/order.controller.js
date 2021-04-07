@@ -3,6 +3,25 @@ const Product = require("../models/Product");
 const utilsHelper = require("../helpers/utils.helper");
 const orderControllers = {};
 
+orderControllers.getAllOrder = async (req, res, next) => {
+  try {
+    requestedOrders = await Order.find({}).populate("userId");
+
+    if (requestedOrders) {
+      utilsHelper.sendResponse(
+        res,
+        200,
+        true,
+        { requestedOrders },
+        null,
+        "Get all order Success"
+      );
+    } else return new (Error("400 - No orders found"))();
+  } catch (error) {
+    next(error);
+  }
+};
+
 //Create the order
 orderControllers.createOrder = async (req, res, next) => {
   try {

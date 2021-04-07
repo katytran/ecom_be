@@ -9,8 +9,10 @@ productControllers.getAllProduct = async (req, res, next) => {
     // change to query later
     let { page, limit, query, sortBy, filter } = req.query;
 
-    page = parseInt(page) || 1;
-    limit = parseInt(limit) || 30;
+    // page = parseInt(page) || 1;
+    // limit = parseInt(limit) || 30;
+    page = parseInt(page);
+    limit = parseInt(limit);
 
     // fenty foundation -> "fenty" "foundation"
     if (query)
@@ -49,18 +51,22 @@ productControllers.getAllProduct = async (req, res, next) => {
       })
         .skip(offset)
         .limit(limit)
-        .populate("category");
+        .populate("category")
+        .populate("reviews");
     } else if (query === "" && filter === "") {
       requestedProducts = await Product.find({})
         .skip(offset)
         .limit(limit)
-        .populate("category");
+        .populate("category")
+        .populate("reviews");
     } else {
       requestedProducts = await Product.find({
         $text: { $search: query },
       })
         .skip(offset)
-        .limit(limit);
+        .limit(limit)
+        .populate("category")
+        .populate("reviews");
     }
 
     // const requestedProducts = await Product.find({})
@@ -115,7 +121,7 @@ productControllers.getSingleProduct = async (req, res, next) => {
     const productId = req.params.id;
     const product = await Product.findById(productId)
       .populate("category")
-      // .populate("reviews")
+      .populate("reviews")
       .populate({
         path: "reviews",
         populate: {
@@ -137,12 +143,25 @@ productControllers.getSingleProduct = async (req, res, next) => {
 
 productControllers.add = async (req, res, next) => {
   try {
-    const { brand, name, description, price, category, images } = req.body;
-    console.log("images", images);
+    const {
+      brand,
+      name,
+      description,
+      price,
+      category,
+      images,
+      ingredients,
+      countInStock,
+    } = req.body;
 
     let product = await Product.findOne({ name: name });
     if (!product) {
       let imagesArray = [];
+      console.log("category", category);
+      let categoryBE = await Category.find({ name: category });
+      console.log("categoryBE", categoryBE);
+      categoryId = categoryBE[0]._id;
+      console.log("categoryBE", categoryId);
 
       for (let item of images) {
         imagesArray.push(item);
@@ -153,17 +172,22 @@ productControllers.add = async (req, res, next) => {
         name,
         description,
         price,
-        // category,
+        category: categoryId,
+        images,
+        ingredients,
+        countInStock,
         images: imagesArray,
+        countSold: 0,
       });
-      utilsHelper.sendResponse(
-        res,
-        200,
-        true,
-        { product },
-        null,
-        `Product ${name} Created Successfully`
-      );
+      console.log("product", product);
+      // utilsHelper.sendResponse(
+      //   res,
+      //   200,
+      //   true,
+      //   { product },
+      //   null,
+      //   `Product ${name} Created Successfully`
+      // );
     } else {
       return next(new Error("Product existed"));
     }
@@ -216,29 +240,40 @@ productControllers.add = async (req, res, next) => {
 */
 productControllers.update = async (req, res, next) => {
   try {
-    const { name, description, price, categories } = req.body;
+    const {
+      brand,
+      name,
+      description,
+      price,
+      category,
+      images,
+      ingredients,
+      countInStock,
+      countSold,
+    } = req.body;
+    console.log("category", category);
 
-    let categoryIds = [];
-    for (let item of categories) {
-      let category = await Category.findOne({ name: item });
-      if (category) {
-        categoryIds.push(category._id);
-      } else {
-        category = await Category.create({ name: item });
-        categoryIds.push(category._id);
-      }
-    }
+    let categoryBE = await Category.find({ name: category });
+    console.log("categoryBE", categoryBE);
+    categoryId = categoryBE[0]._id;
+    console.log("categoryBE", categoryId);
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       {
+        brand,
         name,
         description,
         price,
-        categories: categoryIds,
+        category: categoryId,
+        images,
+        ingredients,
+        countInStock,
+        countSold,
       },
       { new: true }
     );
+    console.log();
     if (!product) {
       return next(new Error("Product not found"));
     }

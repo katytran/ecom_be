@@ -16,6 +16,18 @@ router.get(
 
 /**
  * @route GET api/orders
+ * @description Admin can see all order history
+ * @access LAdmin required
+ */
+router.get(
+  "/",
+  authMiddleware.loginRequired,
+  authMiddleware.adminRequired,
+  orderControllers.getAllOrder
+);
+
+/**
+ * @route GET api/orders
  * @description User can see order detail
  * @access Login required
  */
@@ -32,20 +44,9 @@ router.get(
 router.post("/add", authMiddleware.loginRequired, orderControllers.createOrder);
 
 /**
- * @route GET api/orders
- * @description User can see order detail
- * @access Login required
- */
-router.get(
-  "/:id",
-  authMiddleware.loginRequired,
-  orderControllers.getDetailOrder
-);
-
-/**
  * @route PUT api/orders/:id
  * @description Admin can update order
- * @access Login require
+ * @access Login require, Admin
  */
 router.put(
   "/:id/update",
