@@ -2,6 +2,7 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const utilsHelper = require("../helpers/utils.helper");
 const orderControllers = {};
+const email = require("../helpers/email");
 
 orderControllers.getAllOrder = async (req, res, next) => {
   try {
@@ -199,6 +200,7 @@ orderControllers.updateOrderPayment = async (req, res, next) => {
       { new: true }
     );
     if (!order) return next(new Error("401- Order not found"));
+    email.sendTestEmail();
     utilsHelper.sendResponse(
       res,
       200,
