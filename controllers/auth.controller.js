@@ -47,7 +47,6 @@ authController.login = async ({ user }, res) => {
     });
   }
   const accessToken = await user.generateToken();
-  console.log(accessToken);
   utilsHelper.sendResponse(
     res,
     200,
