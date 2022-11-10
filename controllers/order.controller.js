@@ -36,7 +36,6 @@ orderControllers.createOrder = async (req, res, next) => {
       taxPrice,
       totalOrderPrice,
     } = req.body;
-    console.log("estimated price", estimatedPrice);
 
     const productList = [];
     let estimated_BE = 0;
@@ -54,8 +53,6 @@ orderControllers.createOrder = async (req, res, next) => {
         // update product count in stock
         let countInStock = product.countInStock;
         let countSold = product.countSold;
-        console.log("CountInstock ", countInStock);
-        console.log("Countsold ", countSold);
 
         if (countInStock > item.qty) {
           countInStock = countInStock - item.qty;
@@ -68,27 +65,19 @@ orderControllers.createOrder = async (req, res, next) => {
             },
             { new: true }
           );
-          console.log("updated product", updatedProduct);
         } else return next(new Error("400 - Not enough counts in stock"));
-
-        console.log("CountInstock update", countInStock);
-        console.log("Countsold update", countSold);
+        
         product.image = product.images[0];
         product.qty = item.qty;
         estimated_BE += item.qty * product.price;
-        console.log("product found", product);
         productList.push(product);
       }
     }
-    console.log("total estimated", estimated_BE);
 
     const shippingPrice_BE = estimated_BE > 100 ? 0 : 10;
     const taxPrice_BE = 0.09 * estimated_BE;
     const total_BE = (estimated_BE + shippingPrice_BE + taxPrice_BE).toFixed(2);
-
-    console.log("shiping be", shippingPrice_BE);
-    console.log("total be", total_BE);
-    console.log("total Order", totalOrderPrice);
+    
     if (total_BE != totalOrderPrice)
       return next(new Error("400 - Total Price Does Not Match"));
 
@@ -155,7 +144,6 @@ orderControllers.getMyOrder = async (req, res, next) => {
       null,
       "get my orders success"
     );
-    console.log("orders", order);
   } catch (error) {
     next(error);
   }
@@ -188,7 +176,6 @@ orderControllers.updateOrderPayment = async (req, res, next) => {
   try {
     const orderId = req.params.id;
     const paymentResult = req.body.paymentResult;
-    console.log("payment result", paymentResult);
 
     const order = await Order.findByIdAndUpdate(
       orderId,
